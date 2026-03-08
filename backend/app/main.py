@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.routes import auth, jobs
 
 app = FastAPI(
     title="DevHire API",
@@ -15,10 +16,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
+app.include_router(jobs.router)
+
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to DevHire API"}
+    return {"message": "Welcome to DevHire API 🚀"}
 
 
 @app.get("/health")
