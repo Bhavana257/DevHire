@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import auth, jobs
+from app.api.routes import auth, jobs, applications
 
 app = FastAPI(
     title="DevHire API",
@@ -18,6 +18,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(jobs.router)
+app.include_router(applications.router)
 
 
 @app.get("/")
