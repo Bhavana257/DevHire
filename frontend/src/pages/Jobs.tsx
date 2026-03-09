@@ -24,7 +24,7 @@ const Jobs = () => {
     }
   };
 
-  useEffect(() => { fetchJobs(); }, []);
+useEffect(() => { fetchJobs(); }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
