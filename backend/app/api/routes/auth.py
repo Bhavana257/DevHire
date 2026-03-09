@@ -15,3 +15,11 @@ def register(user_data: UserCreate, db: Session=Depends(get_db)):
 @router.post("/login", response_model=Token)
 def login(user_data: UserLogin, db: Session=Depends(get_db)):
     return login_user(db, user_data.email, user_data.password)
+
+
+from app.core.dependencies import get_current_user
+
+
+@router.get("/me")
+def get_me(current_user=Depends(get_current_user)):
+    return current_user
