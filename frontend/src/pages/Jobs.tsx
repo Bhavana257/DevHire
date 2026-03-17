@@ -3,10 +3,23 @@ import { Link } from 'react-router-dom';
 import API from '../services/api';
 import { Job } from '../types';
 
+const CATEGORIES = [
+  { value: '', label: '🌐 All' },
+  { value: 'software', label: '💻 Software' },
+  { value: 'data', label: '📊 Data' },
+  { value: 'devops', label: '⚙️ DevOps' },
+  { value: 'design', label: '🎨 Design' },
+  { value: 'mobile', label: '📱 Mobile' },
+  { value: 'security', label: '🔒 Security' },
+  { value: 'management', label: '👔 Management' },
+  { value: 'other', label: '🔧 Other' },
+];
+
 const Jobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [search, setSearch] = useState('');
   const [location, setLocation] = useState('');
+  const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(true);
 
   const fetchJobs = async () => {
@@ -15,6 +28,7 @@ const Jobs = () => {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (location) params.append('location', location);
+      if (category) params.append('category', category);
       const res = await API.get(`/jobs/?${params.toString()}`);
       setJobs(res.data);
     } catch (err) {
@@ -24,7 +38,8 @@ const Jobs = () => {
     }
   };
 
-useEffect(() => { fetchJobs(); }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchJobs(); }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -33,8 +48,6 @@ useEffect(() => { fetchJobs(); }, []);
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl font-bold mb-3">Find Your Next Role</h1>
           <p className="text-blue-200 mb-8">Browse hundreds of developer jobs</p>
-
-          {/* Search Bar */}
           <div className="flex flex-col md:flex-row gap-3 max-w-3xl mx-auto">
             <input
               type="text"
@@ -57,6 +70,25 @@ useEffect(() => { fetchJobs(); }, []);
               Search
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Category Filter */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex gap-2 overflow-x-auto">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => { setCategory(cat.value); setTimeout(fetchJobs, 100); }}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition ${
+                category === cat.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -83,6 +115,9 @@ useEffect(() => { fetchJobs(); }, []);
                         <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">📍 {job.location}</span>
                         <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">💼 {job.job_type.replace('_', ' ')}</span>
                         <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm">⭐ {job.experience_level}</span>
+                        {job.category && (
+                          <span className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm">🏷️ {job.category}</span>
+                        )}
                         {job.salary_min && (
                           <span className="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm">
                             💰 ${job.salary_min.toLocaleString()} - ${job.salary_max?.toLocaleString()}

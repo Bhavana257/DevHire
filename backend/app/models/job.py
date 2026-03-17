@@ -18,6 +18,17 @@ class ExperienceLevel(str, enum.Enum):
     senior = "senior"
 
 
+class JobCategory(str, enum.Enum):
+    software = "software"
+    data = "data"
+    devops = "devops"
+    design = "design"
+    mobile = "mobile"
+    security = "security"
+    management = "management"
+    other = "other"
+
+
 class Job(Base):
     __tablename__ = "jobs"
 
@@ -30,6 +41,7 @@ class Job(Base):
     salary_max = Column(Integer, nullable=True)
     job_type = Column(Enum(JobType), default=JobType.full_time)
     experience_level = Column(Enum(ExperienceLevel), default=ExperienceLevel.mid)
+    category = Column(Enum(JobCategory), default=JobCategory.software)
     skills_required = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     employer_id = Column(Integer, ForeignKey("users.id"), nullable=False)

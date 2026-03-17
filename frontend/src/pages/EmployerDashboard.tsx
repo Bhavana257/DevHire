@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Job } from '../types';
@@ -10,11 +9,13 @@ const EmployerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState('');
+  const [viewingApplicants, setViewingApplicants] = useState<number | null>(null);
+  const [applicants, setApplicants] = useState<any[]>([]);
   const [form, setForm] = useState({
     title: '', description: '', company_name: '',
     location: '', salary_min: '', salary_max: '',
     job_type: 'full_time', experience_level: 'mid',
-    skills_required: ''
+    category: 'software', skills_required: ''
   });
 
   const fetchMyJobs = async () => {
@@ -26,6 +27,7 @@ const EmployerDashboard = () => {
     finally { setLoading(false); }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchMyJobs(); }, []);
 
   const handlePost = async () => {
@@ -37,7 +39,7 @@ const EmployerDashboard = () => {
       });
       setMessage('✅ Job posted successfully!');
       setShowForm(false);
-      setForm({ title: '', description: '', company_name: '', location: '', salary_min: '', salary_max: '', job_type: 'full_time', experience_level: 'mid', skills_required: '' });
+      setForm({ title: '', description: '', company_name: '', location: '', salary_min: '', salary_max: '', job_type: 'full_time', experience_level: 'mid', category: 'software', skills_required: '' });
       fetchMyJobs();
     } catch (err: any) {
       setMessage(err.response?.data?.detail || 'Failed to post job');
@@ -48,6 +50,20 @@ const EmployerDashboard = () => {
     if (!window.confirm('Delete this job?')) return;
     await API.delete(`/jobs/${jobId}`);
     fetchMyJobs();
+  };
+
+  const loadApplicants = async (jobId: number) => {
+    if (viewingApplicants === jobId) {
+      setViewingApplicants(null);
+      return;
+    }
+    try {
+      const res = await API.get(`/applications/job/${jobId}`);
+      setApplicants(res.data);
+      setViewingApplicants(jobId);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -123,6 +139,23 @@ const EmployerDashboard = () => {
                   <option value="senior">Senior</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="software">💻 Software</option>
+                  <option value="data">📊 Data</option>
+                  <option value="devops">⚙️ DevOps</option>
+                  <option value="design">🎨 Design</option>
+                  <option value="mobile">📱 Mobile</option>
+                  <option value="security">🔒 Security</option>
+                  <option value="management">👔 Management</option>
+                  <option value="other">🔧 Other</option>
+                </select>
+              </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
@@ -176,25 +209,62 @@ const EmployerDashboard = () => {
           ) : (
             <div className="space-y-4">
               {jobs.map((job) => (
-                <div key={job.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <div>
-                    <h3 className="font-bold text-gray-800">{job.title}</h3>
-                    <p className="text-sm text-gray-500">{job.location} • {job.job_type.replace('_', ' ')}</p>
+                <div key={job.id}>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div>
+                      <h3 className="font-bold text-gray-800">{job.title}</h3>
+                      <p className="text-sm text-gray-500">{job.location} • {job.job_type.replace('_', ' ')} • {(job as any).category}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${job.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {job.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      <button
+                        onClick={() => loadApplicants(job.id)}
+                        className="text-blue-600 text-sm font-medium hover:underline"
+                      >
+                        {viewingApplicants === job.id ? 'Hide Applicants' : 'View Applicants'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(job.id)}
+                        className="text-red-500 text-sm font-medium hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${job.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {job.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                    <Link to={`/employer/jobs/${job.id}/applicants`} className="text-blue-600 text-sm font-medium hover:underline">
-                      View Applicants
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(job.id)}
-                      className="text-red-500 text-sm font-medium hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </div>
+
+                  {/* Applicants Panel */}
+                  {viewingApplicants === job.id && (
+                    <div className="mt-2 bg-blue-50 rounded-xl p-4 border border-blue-100">
+                      <h4 className="font-semibold text-gray-700 mb-3">👥 Applicants ({applicants.length})</h4>
+                      {applicants.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No applicants yet</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {applicants.map((app: any) => (
+                            <div key={app.id} className="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm">
+                              <div>
+                                <p className="font-medium text-gray-800">Candidate #{app.candidate_id}</p>
+                                <p className="text-xs text-gray-500">Applied: {new Date(app.created_at).toLocaleDateString()}</p>
+                                {app.cover_letter && (
+                                  <p className="text-xs text-gray-600 mt-1 italic">"{app.cover_letter.substring(0, 80)}..."</p>
+                                )}
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${
+                                app.status === 'hired' ? 'bg-green-100 text-green-700' :
+                                app.status === 'shortlisted' ? 'bg-yellow-100 text-yellow-700' :
+                                app.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                'bg-blue-100 text-blue-700'
+                              }`}>
+                                {app.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

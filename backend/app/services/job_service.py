@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models.job import Job
 from app.schemas.job import JobCreate, JobUpdate
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
 
 def create_job(db: Session, job_data: JobCreate, employer_id: int):
@@ -13,7 +13,7 @@ def create_job(db: Session, job_data: JobCreate, employer_id: int):
     return new_job
 
 
-def get_all_jobs(db: Session, skip: int=0, limit: int=10, search: str=None, location: str=None):
+def get_all_jobs(db: Session, skip: int=0, limit: int=50, search: str=None, location: str=None, category: str=None):
     query = db.query(Job).filter(Job.is_active == True)
     if search:
         query = query.filter(
@@ -22,6 +22,8 @@ def get_all_jobs(db: Session, skip: int=0, limit: int=10, search: str=None, loca
         )
     if location:
         query = query.filter(Job.location.ilike(f"%{location}%"))
+    if category:
+        query = query.filter(Job.category == category)
     return query.offset(skip).limit(limit).all()
 
 

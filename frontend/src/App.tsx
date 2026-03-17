@@ -1,16 +1,16 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-
-import AdminDashboard from './pages/AdminDashboard';
-import ApplicationTracking from './pages/ApplicationTracking';
+import Navbar from './components/Navbar';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Jobs from './pages/Jobs';
+import JobDetail from './pages/JobDetail';
 import CandidateDashboard from './pages/CandidateDashboard';
 import EmployerDashboard from './pages/EmployerDashboard';
-import JobDetail from './pages/JobDetail';
-import Jobs from './pages/Jobs';
-import Login from './pages/Login';
-import Navbar from './components/Navbar';
-import React from 'react';
-import Register from './pages/Register';
+import ApplicationTracking from './pages/ApplicationTracking';
+import AdminDashboard from './pages/AdminDashboard';
+import ATSScanner from './pages/ATSScanner';
 
 const ProtectedRoute = ({ children, role }: { children: React.ReactElement, role?: string }) => {
   const { isAuthenticated, user } = useAuth();
@@ -34,6 +34,9 @@ function AppRoutes() {
         } />
         <Route path="/candidate/applications" element={
           <ProtectedRoute role="candidate"><ApplicationTracking /></ProtectedRoute>
+        } />
+        <Route path="/ats-scanner" element={
+          <ProtectedRoute role="candidate"><ATSScanner /></ProtectedRoute>
         } />
         <Route path="/employer/dashboard" element={
           <ProtectedRoute role="employer"><EmployerDashboard /></ProtectedRoute>

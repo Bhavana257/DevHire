@@ -1,5 +1,4 @@
 import { Link, useNavigate } from 'react-router-dom';
-
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -14,12 +13,10 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
- {/* Logo */}
-<Link to="/">
-  <img src="/devhire-logo.svg" alt="DevHire" className="h-12" />
-</Link>
+        <Link to="/">
+          <img src="/devhire-logo.svg" alt="DevHire" className="h-12" />
+        </Link>
 
-        {/* Nav Links */}
         <div className="flex items-center gap-6">
           <Link to="/jobs" className="text-gray-600 hover:text-blue-600 font-medium transition">
             Browse Jobs
@@ -36,12 +33,26 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link
-                to={user?.role === 'employer' ? '/employer/dashboard' : '/candidate/dashboard'}
-                className="text-gray-600 hover:text-blue-600 font-medium transition"
-              >
-                Dashboard
-              </Link>
+              {user?.role === 'candidate' && (
+                <>
+                  <Link to="/ats-scanner" className="text-gray-600 hover:text-blue-600 font-medium transition">
+                    ATS Scanner
+                  </Link>
+                  <Link to="/candidate/applications" className="text-gray-600 hover:text-blue-600 font-medium transition">
+                    My Applications
+                  </Link>
+                </>
+              )}
+              {user?.role === 'employer' && (
+                <Link to="/employer/dashboard" className="text-gray-600 hover:text-blue-600 font-medium transition">
+                  Dashboard
+                </Link>
+              )}
+              {user?.role === 'admin' && (
+                <Link to="/admin" className="text-gray-600 hover:text-blue-600 font-medium transition">
+                  Admin Panel
+                </Link>
+              )}
               <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-500">Hi, {user?.full_name.split(' ')[0]}</span>
                 <button
